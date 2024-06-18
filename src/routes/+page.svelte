@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount, tick } from 'svelte';
     import Card from '$lib/components/Card.svelte';
-    import {currentCard, isCurrentPriority} from '$lib/stores/store'
+    import {currentCard, isCurrentPriority, slideMagnitude} from '$lib/stores/store'
     import { isCurrentExplanation, isLoading } from '$lib/stores/store';
     import { blur } from 'svelte/transition';
     import { db } from '$lib/stores/store';
@@ -11,6 +11,9 @@
     let currentCardVal: number = 0;
     let isCurrentExplanationVal: boolean = false;
     let isCurrentPriorityVal: boolean = false;
+
+    let slideMagVal = 0;
+	const unsub = slideMagnitude.subscribe((v) => slideMagVal = v);
 
     let userCards = [];
     
@@ -81,14 +84,14 @@
         </div>
 
         {#if !isCurrentExplanationVal && !isCurrentPriorityVal}
-            <p class="rn rn-colored colored opt" transition:blur={{ delay: 0, duration: 170 }}>RN</p>
+            <p class="rn rn-colored colored opt {slideMagVal <= -1 ? 'slide-done' : ''} {slideMagVal < 0 ? 'dragged' : ''}" transition:blur={{ delay: 0, duration: 170 }}>RN</p>
             <p class="rn opt" transition:blur={{ amount: 10, duration: 170 }}>RN</p>
-            <p class="nfp nfp-colored colored opt" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>NFP</p>
+            <p class="nfp nfp-colored colored opt {slideMagVal >= 1 ? 'slide-done' : ''} {slideMagVal > 0 ? 'dragged' : ''}" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>NFP</p>
             <p class="nfp opt" transition:blur={{ delay: 0, duration: 170 }}>NFP</p>
         {:else if isCurrentPriorityVal}
-            <p class="rn rn-colored colored opt" transition:blur={{ delay: 0, duration: 170 }}>Pas prioritaire</p>
+            <p class="rn rn-colored colored opt {slideMagVal <= -1 ? 'slide-done' : ''} {slideMagVal < 0 ? 'dragged' : ''}" transition:blur={{ delay: 0, duration: 170 }}>Pas prioritaire</p>
             <p class="rn opt" transition:blur={{ amount: 10, duration: 170 }}>Pas prioritaire</p>
-            <p class="nfp nfp-colored colored opt" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>Prioritaire</p>
+            <p class="nfp nfp-colored colored opt {slideMagVal >= 1 ? 'slide-done' : ''} {slideMagVal > 0 ? 'dragged' : ''}" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>Prioritaire</p>
             <p class="nfp opt" transition:blur={{ delay: 0, duration: 170 }}>Prioritaire</p>
         {:else}
             <p class="next" transition:blur={{ delay: 0, duration: 170 }}>Glisser pour passer à la suite</p>
@@ -102,7 +105,7 @@
     .main {
         display: grid;
         grid-template-columns: 1fr minmax(120px, 180px) minmax(120px, 180px) 1fr;
-        grid-template-rows: 1.5rem auto 3rem;
+        grid-template-rows: 1.5rem auto 4rem;
         grid-template-areas: 
             ". subject subject ."
             ". slides slides ."
@@ -130,7 +133,10 @@
 
     @media screen and (max-width: 560px) {
         .main {
-            grid-template-rows: 2.25rem auto 3rem;
+            grid-template-rows: 2.25rem auto 3.75rem;
+        }
+        .swipe-slides {
+            margin-bottom: 1.5rem;
         }
     }
     
@@ -182,11 +188,17 @@
     }
 
     .opt {
+        border: 1px solid var(--grey);
+        border-radius: 1rem;
         font-size: 1.25rem;
         opacity: 1;
         transition: opacity 0.1s ease-out;
         display: flex;
-        align-items: flex-end;
+        align-items: center;
+    }
+
+    .opt.dragged {
+        border: 1px solid var(--blended-color);
     }
 
     .rn {
@@ -230,10 +242,20 @@
         font-weight: calc(500 + var(--slide-mag-left)*120);
     }
 
+    .rn.slide-done {
+        background-color: var(--left-color);
+        color: white;
+    }
+
     .nfp.colored {
         color: var(--right-color);
         opacity: var(--slide-mag-right);
         font-weight: calc(500 + var(--slide-mag-right)*120);
+    }
+
+    .nfp.slide-done {
+        background-color: var(--right-color);
+        color: white;
     }
 
     .next {

@@ -3,7 +3,7 @@
 </script>
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { currentCard, isCurrentExplanation, isLoading } from "$lib/stores/store";
 	import { isCurrentPriority } from "$lib/stores/store";
 	import { slideMagnitude } from "$lib/stores/store";
@@ -169,7 +169,7 @@
 					}
 					// mark as done after CSS transition
 					event.target.addEventListener('transitionend', () => {
-						event.target.setAttribute('data-status', "done");
+						event.target.remove();
 					});
 					// activate next card
 					event.target.nextElementSibling.setAttribute('data-status', 'current');
@@ -181,14 +181,25 @@
                     let offsetStep = 3;
                     let delayStep = 50;
                     let i = 1;
+					let scale = 1;
+					let offsetX = 2;
 
                     children.forEach(child => {
-                        if (child != event.target && children.indexOf(child) > currentCardId) {
-                            setTimeout(() => {
-                                child.style.top = parseInt(child.style.top.replace("px", "")) - offsetStep + "px"; 
-								child.style.setProperty('--card-y', ((1 - 0.002*i) + ''))
-                            }, delayStep*i);
-                            i++;
+                        if (child != event.target) {
+							let newOffset = offsetX + "px";
+							let newScale = scale;
+							let currIndex = i;
+							setTimeout(() => {
+								child.style.top = newOffset;
+								child.style.setProperty('--card-y', ((1 - 0.002*currIndex) + ''));
+								child.style.setProperty('--scale', newScale + '');	
+							}, i*delayStep);
+
+							console.log("del : ", i*delayStep);
+							
+							scale -= 0.002;
+							offsetX += offsetStep;
+							i++;
                         }
                     });
 
@@ -252,20 +263,26 @@
 
 
 			children.forEach(child => {
+				console.log(i);
+				console.log(scale);
+				console.log("--");
 				if (i == 0) {
 					currentCard.set(child);
 					child.classList.remove("blur");
 					isCurrentPriority.set(child.getAttribute('data-is-priority') == 'true');
-					if (isCurrentPriorityVal) {
-						rightColor = green;
-						leftColor = red;
-					}
-					else {
-						rightColor = red;
-						leftColor = blue;
-					}
-					document.documentElement.style.setProperty('--right-color', rightColor);
-					document.documentElement.style.setProperty('--left-color', leftColor);
+					tick().then(() => {
+						console.log("hey");
+						if (isCurrentPriorityVal) {
+							rightColor = green;
+							leftColor = red;
+						}
+						else {
+							rightColor = red;
+							leftColor = blue;
+						}	
+						document.documentElement.style.setProperty('--right-color', rightColor);
+						document.documentElement.style.setProperty('--left-color', leftColor);
+					});
 					isCurrentExplanation.set(child.getAttribute('data-is-explanation') == 'true');
 				}
 				child.classList.add("stop-transition");
@@ -433,7 +450,7 @@
 	:global(.card) {
 		--card-x: 0;
 		--card-y: 0;
-		--card-r: 0;
+		--card-r: 0deg;
 		--scale: 1;
 		
 		-ms-touch-action: none;
