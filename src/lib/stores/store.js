@@ -1,17 +1,15 @@
 import { readable, writable } from "svelte/store";
 import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
-import { PUBLIC_FB_API_KEY, PUBLIC_FB_AUTH_DOMAIN, PUBLIC_FB_MEASUREMENT_ID, PUBLIC_FB_MESSAGING_SENDER_ID, PUBLIC_FB_PROJECT_ID, PUBLIC_FB_STORAGE_BUCKET, PUBLIC_FB_APP_ID } from "$env/static/public";
-
 	
 const firebaseConfig = {
-	apiKey: PUBLIC_FB_API_KEY,
-	authDomain: PUBLIC_FB_AUTH_DOMAIN,
-	projectId: PUBLIC_FB_PROJECT_ID,
-	storageBucket: PUBLIC_FB_STORAGE_BUCKET,
-	messagingSenderId: PUBLIC_FB_MESSAGING_SENDER_ID,
-	appId: PUBLIC_FB_APP_ID,
-	measurementId: PUBLIC_FB_MEASUREMENT_ID
+	apiKey: "AIzaSyAVgrQZMkUPVcxCWZFSHhvRY3pnXmqxI4E",
+	authDomain: "rn-ou-nfp.firebaseapp.com",
+	projectId: "rn-ou-nfp",
+	storageBucket: "rn-ou-nfp.appspot.com",
+	messagingSenderId: "461327230325",
+	appId: "1:461327230325:web:532bd279b6aea40e00df3c",
+	measurementId: "G-D61HJKDN3S"
 };
 
 // Initialize Firebase

@@ -104,7 +104,7 @@
                     offset: 0.6
                 },
                 {
-                    transform: 'translateX(0px) translateY(-3px) rotateZ(0deg) rotateY(0deg) scale(1)',
+                    transform: 'translateX(0px) translateY(0) rotateZ(0deg) rotateY(0deg) scale(1)',
                     zIndex: 10,
                     offset: 1
                 }
@@ -146,7 +146,7 @@
                     offset: 0.6
                 },
                 {
-                    transform: 'translateX(0px) translateY(3px) rotateZ(0deg) rotateY(0deg) scale(1)',
+                    transform: 'translateX(0px) translateY(0) rotateZ(0deg) rotateY(0deg) scale(1)',
                     zIndex: 5,
                     offset: 1
                 }
@@ -193,7 +193,7 @@
     </button>
 
     <div class="swipe-slides" id="slides">
-        <div class="card card-question editable-card" id="card-question">
+        <div class="card card-question editable-card {onFirstTab ? 'current' : ''}" id="card-question">
             <div class="input-cont">
                 <textarea bind:value={chosenTitle} rows="1" use:autosize class="title" 
                     name="title" 
@@ -203,7 +203,7 @@
             </div>
         </div>
 
-        <div class="card card-answer editable-card" data-is-explanation="true" id="card-answer">
+        <div class="card card-answer editable-card {!onFirstTab ? 'current' : ''}" data-is-explanation="true" id="card-answer">
             <div class="input-cont">
                 <textarea bind:value={chosenAnswer} rows="1" use:autosize class="title" 
                     name="title" 
@@ -251,6 +251,18 @@
 
 
 <style>
+    .card.current {
+        top: -3px;
+    }
+    .card:not(.current) {
+        top: 3;
+    }
+    .card-question {
+        z-index: 10;
+    }
+    .card-answer {
+        z-index: 5;
+    }
     .send {
         position: relative;
         grid-area: send;
