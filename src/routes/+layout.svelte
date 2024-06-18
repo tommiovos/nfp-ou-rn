@@ -4,10 +4,20 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { currentCard, isCurrentExplanation } from "$lib/stores/store";
+	import { currentCard, isCurrentExplanation, isLoading } from "$lib/stores/store";
 	import { isCurrentPriority } from "$lib/stores/store";
 	import { slideMagnitude } from "$lib/stores/store";
 
+	// CHANGE TODO : Change so the base css styles etc are only set once loading is done, otherwise the user cards don't display correctly (lower z-index ie)
+
+
+	let isLoadingVal = true;
+	let didFirstLoad = false;
+	const unsubIsLoading = isLoading.subscribe((v) => {
+		if (!didFirstLoad && v == false) {
+			setupCards();
+		}
+	});
 
 	// SLIDE
 	let slideMagVal = 0;
@@ -127,7 +137,6 @@
 		setBorderColor(x, mags.magRight, mags.magLeft);
 	}
 	onMount(() => {
-		setupCards();
 		// get viewport width
 		const vw = document.documentElement.clientWidth;
 		// create an off canvas x coordinate
@@ -217,62 +226,63 @@
 				}
 			}
 		});
+	});
 
 
-		function setupCards() {
-			if (browser) {
-				const slidesEl = document.getElementById("slides");
+	// SETUP CARDS
+	function setupCards() {
+		if (browser) {
+			const slidesEl = document.getElementById("slides");
 
-				if (slidesEl == null) {
-					return;
-				}
+			if (slidesEl == null) {
+				return;
+			}
 
-				const children = Array.from(slidesEl.children) as HTMLElement[];
-				let z = (children.length*10) + 10;
-				let offsetX = 2;
-				let offsetStep = 3;
-				let scale = 1;
-				let i = 0;
+			const children = Array.from(slidesEl.children) as HTMLElement[];
+			let z = (children.length*10) + 10;
+			let offsetX = 2;
+			let offsetStep = 3;
+			let scale = 1;
+			let i = 0;
 
-				document.documentElement.style.setProperty('--slide-mag', 0 + '');
-				document.documentElement.style.setProperty('--slide-mag-right', 0 + '');
-				document.documentElement.style.setProperty('--slide-mag-left', 0 + '');
-				document.documentElement.style.setProperty('--blended-color', "#C5C5C5");
+			document.documentElement.style.setProperty('--slide-mag', 0 + '');
+			document.documentElement.style.setProperty('--slide-mag-right', 0 + '');
+			document.documentElement.style.setProperty('--slide-mag-left', 0 + '');
+			document.documentElement.style.setProperty('--blended-color', "#C5C5C5");
 
 
-				children.forEach(child => {
-					if (i == 0) {
-						currentCard.set(child);
-						child.classList.remove("blur");
-						isCurrentPriority.set(child.getAttribute('data-is-priority') == 'true');
-						if (isCurrentPriorityVal) {
-							rightColor = green;
-							leftColor = red;
-						}
-						else {
-							rightColor = red;
-							leftColor = blue;
-						}
-						document.documentElement.style.setProperty('--right-color', rightColor);
-						document.documentElement.style.setProperty('--left-color', leftColor);
-						isCurrentExplanation.set(child.getAttribute('data-is-explanation') == 'true');
+			children.forEach(child => {
+				if (i == 0) {
+					currentCard.set(child);
+					child.classList.remove("blur");
+					isCurrentPriority.set(child.getAttribute('data-is-priority') == 'true');
+					if (isCurrentPriorityVal) {
+						rightColor = green;
+						leftColor = red;
 					}
-					child.classList.add("stop-transition");
+					else {
+						rightColor = red;
+						leftColor = blue;
+					}
+					document.documentElement.style.setProperty('--right-color', rightColor);
+					document.documentElement.style.setProperty('--left-color', leftColor);
+					isCurrentExplanation.set(child.getAttribute('data-is-explanation') == 'true');
+				}
+				child.classList.add("stop-transition");
 
-					child.style.zIndex = z.toString();
-					child.style.top = offsetX + "px";
-					child.style.setProperty('--scale', scale + '');
+				child.style.zIndex = z.toString();
+				child.style.top = offsetX + "px";
+				child.style.setProperty('--scale', scale + '');
 
-					child.classList.remove("stop-transition");
+				child.classList.remove("stop-transition");
 
-					offsetX += offsetStep;
-					z -= 10;
-					scale -= 0.002;
-					i++;
-				});
+				offsetX += offsetStep;
+				z -= 10;
+				scale -= 0.002;
+				i++;
+			});
         	}
 		}
-	});
 
 
 	// COLOR BLENDING
@@ -310,13 +320,9 @@
 		else
 			color2 = color2.substring(1);   
 
-		console.log('valid: c1 => ' + color1 + ', c2 => ' + color2);
-
 		// 3: we have valid input, convert colors to rgb
 		color1 = [parseInt(color1[0] + color1[1], 16), parseInt(color1[2] + color1[3], 16), parseInt(color1[4] + color1[5], 16)];
 		color2 = [parseInt(color2[0] + color2[1], 16), parseInt(color2[2] + color2[3], 16), parseInt(color2[4] + color2[5], 16)];
-
-		console.log('hex -> rgba: c1 => [' + color1.join(', ') + '], c2 => [' + color2.join(', ') + ']');
 
 		// 4: blend
 		const color3 = [ 
@@ -325,12 +331,8 @@
 			(1 - percentage) * color1[2] + percentage * color2[2]
 		];
 
-		console.log('c3 => [' + color3.join(', ') + ']');
-
 		// 5: convert to hex
 		const color3Hex = '#' + intToHex(color3[0]) + intToHex(color3[1]) + intToHex(color3[2]);
-
-		console.log(color3);
 
 		// return hex
 		return color3Hex;
@@ -366,6 +368,8 @@
 		--red: #E40E32;
 		--blue: #1F40B8;
 		--black: #1C1C1C; 
+		--grey: #C5C5C5;
+		--grey-mid: #9D9D9D;
 	}
 	/*
 	1. Use a more-intuitive box-sizing model.
@@ -379,7 +383,7 @@
 	:global(*) {
 		margin: 0;
 	}
-	:global(p, span, div) {
+	:global(p, span, div, pre, input, textarea) {
 		font-family: "Golos Text", sans-serif;
   		font-optical-sizing: auto;
 	}
@@ -416,5 +420,69 @@
 	*/
 	:global(#root, #__next) {
 		isolation: isolate;
+	}
+
+
+
+	:global(.card p) {
+		font-size: 1.25rem;
+	}
+	:global(.card .text) {
+		line-height: 2rem;
+	}
+	:global(.card) {
+		--card-x: 0;
+		--card-y: 0;
+		--card-r: 0;
+		--scale: 1;
+
+		background-color: white;
+		border: 1px solid #C5C5C5;
+		border-radius: 2rem;
+		position: absolute;
+		top: 0;
+		left: 0;
+		transform: scale(var(--scale));
+		padding: 2.3rem;
+		transition: box-shadow 0.2s, transform 0.25s ease-out, top 0.25s ease-out 0.3s, opacity 0.3s ease-out;
+		box-shadow: -64px 173px 52px 0px rgba(0, 0, 0, 0.00), -41px 111px 47px 0px rgba(0, 0, 0, 0.00), -23px 62px 40px 0px rgba(0, 0, 0, 0.00), -10px 28px 29px 0px rgba(0, 0, 0, 0.00), -3px 7px 16px 0px rgba(0, 0, 0, 0.00);
+	}
+	:global(.card[data-dragging="true"]) {
+		transform: translateX(var(--card-x)) translateY(var(--card-y)) rotate(var(--card-r)) scale(var(--scale));
+		transition: none;
+	}
+
+	:global(.card[data-dragging="false"]) {
+		transition: box-shadow 0.2s, transform 0.25s ease-out, top 0.25s ease-out 0.3s, opacity 0.3s ease-out;
+		transform: translateX(var(--card-x)) translateY(var(--card-y)) rotate(var(--card-r)) scale(var(--scale));
+	}
+
+	:global(.card[data-status="transition"], .card[data-status="done"]) {
+		transform: scale(0.6);
+		transform: translateX(calc(var(--card-x)*2)) translateY(calc(var(--card-y)*1.3 + 26vh)) rotate(calc(var(--card-r)*2.5)) scale(0.7);
+		opacity: 0;
+	}
+	:global(.card[data-status="current"]) {
+		border-color: var(--blended-color);
+		box-shadow: -64px 173px 52px 0px rgba(0, 0, 0, 0.00), -41px 111px 47px 0px rgba(0, 0, 0, 0.00), -23px 62px 40px 0px rgba(0, 0, 0, 0.02), -10px 28px 29px 0px rgba(0, 0, 0, 0.03), -3px 7px 16px 0px rgba(0, 0, 0, 0.03);
+	}
+
+	/* Explanation cards */
+	:global(.card[data-is-explanation="true"]) {
+		background-color: var(--black);
+		border-color: var(--black);
+	}
+
+	:global(.card > *) {
+		transition: filter 0.2s ease-out;
+		filter: blur(0px);
+	}
+
+	:global(.card[data-is-explanation="true"] > *) {
+		color: white;
+	}
+
+	:global(.card[data-show="false"] > *) {
+		filter: blur(10px);
 	}
 </style>

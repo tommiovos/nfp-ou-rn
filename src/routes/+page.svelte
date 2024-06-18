@@ -1,13 +1,41 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, tick } from 'svelte';
     import Card from '$lib/components/Card.svelte';
     import {currentCard, isCurrentPriority} from '$lib/stores/store'
-    import { isCurrentExplanation } from '$lib/stores/store';
+    import { isCurrentExplanation, isLoading } from '$lib/stores/store';
     import { blur } from 'svelte/transition';
+    import { db } from '$lib/stores/store';
+    import { browser } from '$app/environment';
+    import { collection, getDocs, query, where } from 'firebase/firestore';
 
     let currentCardVal: number = 0;
     let isCurrentExplanationVal: boolean = false;
     let isCurrentPriorityVal: boolean = false;
+
+    let userCards = [];
+    
+    let isLoadingVal = true;
+    const unsubIsLoading = isLoading.subscribe((v) => isLoadingVal = v);
+
+    onMount(() => {
+        if (browser) {
+            async function setLoadingFalse() {
+                await tick();
+                isLoading.set(false);
+            }
+            async function loadData() {
+                const q = query(collection($db, "cards"), where("accepted", "==", true));
+                await getDocs(q).then((res) => {
+                    res.forEach(v => userCards.push(v.data()));    
+                    userCards = [...userCards];
+                    setLoadingFalse();
+                });
+                console.log("user cards : ", userCards);
+            } 
+
+            loadData();
+        }
+    })
 
     const unsubCard = currentCard.subscribe((v) => currentCardVal = v);
     const unsubIsExplanation = isCurrentExplanation.subscribe((v) => isCurrentExplanationVal = v);
@@ -20,23 +48,33 @@
         <p class="subject" transition:blur={{ delay: 0, duration: 170 }}>Ce sujet est il prioritaire pour vous ?</p>
     {/if}
     <div class="swipe-slides" id="slides">
-        <Card cardContent={"One"} isCurrent={true} isPriorityChoice={true}>
+        <Card isCurrent={true} isPriorityChoice={true}>
             <p class="title">L'immigration</p>
         </Card>
-        <Card cardContent={"One"} isCurrent={false} isPriorityChoice={true}>
+        <Card isCurrent={false} isPriorityChoice={true}>
             <p class="title">L'écologie</p>
         </Card>
-        <Card cardContent={"One"} isCurrent={false}>
+        <Card isCurrent={false}>
             <p class="title">A voté contre l'augmentation du SMIC à 1500 euros net</p>
         </Card>
-        <Card cardContent={"Two"} isCurrent={false} isExplanation={true}>
+        <Card isCurrent={false} isExplanation={true}>
             <p class="title">RN</p>
             <p class="text">
                 L'amendement presenté par Clémence GUETTE (LFI), à été refusé 257 voix contre 121. <br><br>
                 Parmi ces 257 voix contre on retrouve l'ensemble des députés macronistes, les républicains et le RN, à l'exception de 4 députés qui s'abstiennent.
             </p>
         </Card>
-        <Card cardContent={"Three"} isCurrent={false} isExplanation={false}></Card>
+        {#each userCards as cardData}
+            <Card isCurrent={false} isExplanation={false}>
+                <p class="title">{cardData.title}</p>
+            </Card>
+            <Card isCurrent={false} isExplanation={true}>
+                <p class="title">{cardData.answer}</p>
+                <p class="text">
+                    {cardData.answerDetails}
+                </p>
+            </Card>
+        {/each}
     </div>
 
     {#if !isCurrentExplanationVal && !isCurrentPriorityVal}
@@ -107,6 +145,7 @@
     }
 
     .title {
+        position: relative;
         font-size: 2rem;
         font-weight: 600;
         padding-bottom: 1rem;
