@@ -435,6 +435,9 @@
 		--card-y: 0;
 		--card-r: 0;
 		--scale: 1;
+		
+		-ms-touch-action: none;
+  		touch-action: none;
 
 		background-color: white;
 		border: 1px solid #C5C5C5;

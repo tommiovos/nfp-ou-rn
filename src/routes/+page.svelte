@@ -102,7 +102,7 @@
     .main {
         display: grid;
         grid-template-columns: 1fr minmax(120px, 180px) minmax(120px, 180px) 1fr;
-        grid-template-rows: 2rem auto 3rem;
+        grid-template-rows: 1.5rem auto 3rem;
         grid-template-areas: 
             ". subject subject ."
             ". slides slides ."
@@ -125,6 +125,18 @@
     @media screen and (min-width: 460px) {
         .main {
             padding: 2rem;    
+        }
+    }
+
+    @media screen and (max-width: 560px) {
+        .main {
+            grid-template-rows: 2.25rem auto 3rem;
+        }
+    }
+    
+    @media screen and (max-width: 420px) {
+        .main {
+            grid-template-rows: 3rem auto 3rem;
         }
     }
 
@@ -225,7 +237,11 @@
     }
 
     .next {
-        padding: 0 1rem 0 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        height: 100%;
+        padding: 0 1rem 0.35rem 1rem;
         text-align: center;
         grid-row: 3/4;
         grid-column: 2/4;
