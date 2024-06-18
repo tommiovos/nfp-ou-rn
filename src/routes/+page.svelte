@@ -15,11 +15,13 @@
     let userCards = [];
     
     let isLoadingVal = true;
+    let isLoadingEarly = true;
     const unsubIsLoading = isLoading.subscribe((v) => isLoadingVal = v);
 
     onMount(() => {
         if (browser) {
             async function setLoadingFalse() {
+                isLoadingEarly = false;
                 await tick();
                 isLoading.set(false);
             }
@@ -44,51 +46,53 @@
 </script>
 
 <section class="main">
-    {#if isCurrentPriorityVal}
-        <p class="subject" transition:blur={{ delay: 0, duration: 170 }}>Ce sujet est il prioritaire pour vous ?</p>
-    {/if}
-    <div class="swipe-slides" id="slides">
-        <Card isCurrent={true} isPriorityChoice={true}>
-            <p class="title">L'immigration</p>
-        </Card>
-        <Card isCurrent={false} isPriorityChoice={true}>
-            <p class="title">L'écologie</p>
-        </Card>
-        <Card isCurrent={false}>
-            <p class="title">A voté contre l'augmentation du SMIC à 1500 euros net</p>
-        </Card>
-        <Card isCurrent={false} isExplanation={true}>
-            <p class="title">RN</p>
-            <p class="text">
-                L'amendement presenté par Clémence GUETTE (LFI), à été refusé 257 voix contre 121. <br><br>
-                Parmi ces 257 voix contre on retrouve l'ensemble des députés macronistes, les républicains et le RN, à l'exception de 4 députés qui s'abstiennent.
-            </p>
-        </Card>
-        {#each userCards as cardData}
-            <Card isCurrent={false} isExplanation={false}>
-                <p class="title">{cardData.title}</p>
+    {#if !isLoadingEarly}
+        {#if isCurrentPriorityVal}
+            <p class="subject" transition:blur={{ delay: 0, duration: 170 }}>Ce sujet est il prioritaire pour vous ?</p>
+        {/if}
+        <div class="swipe-slides" id="slides">
+            <Card isCurrent={true} isPriorityChoice={true}>
+                <p class="title">L'immigration</p>
+            </Card>
+            <Card isCurrent={false} isPriorityChoice={true}>
+                <p class="title">L'écologie</p>
+            </Card>
+            <Card isCurrent={false}>
+                <p class="title">A voté contre l'augmentation du SMIC à 1500 euros net</p>
             </Card>
             <Card isCurrent={false} isExplanation={true}>
-                <p class="title">{cardData.answer}</p>
+                <p class="title">RN</p>
                 <p class="text">
-                    {cardData.answerDetails}
+                    L'amendement presenté par Clémence GUETTE (LFI), à été refusé 257 voix contre 121. <br><br>
+                    Parmi ces 257 voix contre on retrouve l'ensemble des députés macronistes, les républicains et le RN, à l'exception de 4 députés qui s'abstiennent.
                 </p>
             </Card>
-        {/each}
-    </div>
+            {#each userCards as cardData}
+                <Card isCurrent={false} isExplanation={false}>
+                    <p class="title">{cardData.title}</p>
+                </Card>
+                <Card isCurrent={false} isExplanation={true}>
+                    <p class="title">{cardData.answer}</p>
+                    <p class="text">
+                        {cardData.answerDetails}
+                    </p>
+                </Card>
+            {/each}
+        </div>
 
-    {#if !isCurrentExplanationVal && !isCurrentPriorityVal}
-        <p class="rn rn-colored colored opt" transition:blur={{ delay: 0, duration: 170 }}>RN</p>
-        <p class="rn opt" transition:blur={{ amount: 10, duration: 170 }}>RN</p>
-        <p class="nfp nfp-colored colored opt" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>NFP</p>
-        <p class="nfp opt" transition:blur={{ delay: 0, duration: 170 }}>NFP</p>
-    {:else if isCurrentPriorityVal}
-        <p class="rn rn-colored colored opt" transition:blur={{ delay: 0, duration: 170 }}>Pas prioritaire</p>
-        <p class="rn opt" transition:blur={{ amount: 10, duration: 170 }}>Pas prioritaire</p>
-        <p class="nfp nfp-colored colored opt" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>Prioritaire</p>
-        <p class="nfp opt" transition:blur={{ delay: 0, duration: 170 }}>Prioritaire</p>
-    {:else}
-        <p class="next" transition:blur={{ delay: 0, duration: 170 }}>Glisser pour passer à la suite</p>
+        {#if !isCurrentExplanationVal && !isCurrentPriorityVal}
+            <p class="rn rn-colored colored opt" transition:blur={{ delay: 0, duration: 170 }}>RN</p>
+            <p class="rn opt" transition:blur={{ amount: 10, duration: 170 }}>RN</p>
+            <p class="nfp nfp-colored colored opt" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>NFP</p>
+            <p class="nfp opt" transition:blur={{ delay: 0, duration: 170 }}>NFP</p>
+        {:else if isCurrentPriorityVal}
+            <p class="rn rn-colored colored opt" transition:blur={{ delay: 0, duration: 170 }}>Pas prioritaire</p>
+            <p class="rn opt" transition:blur={{ amount: 10, duration: 170 }}>Pas prioritaire</p>
+            <p class="nfp nfp-colored colored opt" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>Prioritaire</p>
+            <p class="nfp opt" transition:blur={{ delay: 0, duration: 170 }}>Prioritaire</p>
+        {:else}
+            <p class="next" transition:blur={{ delay: 0, duration: 170 }}>Glisser pour passer à la suite</p>
+        {/if}
     {/if}
 </section>
 
@@ -98,7 +102,7 @@
     .main {
         display: grid;
         grid-template-columns: 1fr minmax(120px, 180px) minmax(120px, 180px) 1fr;
-        grid-template-rows: 2rem auto 1rem;
+        grid-template-rows: 2rem auto 3rem;
         grid-template-areas: 
             ". subject subject ."
             ". slides slides ."
@@ -166,10 +170,11 @@
     }
 
     .opt {
-        padding-right: 1rem;
         font-size: 1.25rem;
         opacity: 1;
         transition: opacity 0.1s ease-out;
+        display: flex;
+        align-items: flex-end;
     }
 
     .rn {
@@ -179,6 +184,7 @@
         text-align: left;
         grid-area: rn;
         place-self: center;
+        justify-content: flex-start;
     }
 
     .rn:not(.colored) {
@@ -194,6 +200,7 @@
         text-align: right;
         grid-area: nfp;
         place-self: center;
+        justify-content: flex-end;
     }
 
     .nfp:not(.colored) {
