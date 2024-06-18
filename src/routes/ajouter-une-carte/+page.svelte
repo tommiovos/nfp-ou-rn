@@ -501,6 +501,16 @@
         }
     }
 
+    @media screen and (orientation: portrait) and (max-width: 800px) {
+        .main {
+            grid-template-rows: 4rem auto 6rem 4rem;
+            padding: 0rem 1.75rem;
+        }
+        .swipe-slides {
+            aspect-ratio: 1/1.25;
+        }
+    }
+
     .opt {
         padding-right: 1rem;
         font-size: 1.25rem;
