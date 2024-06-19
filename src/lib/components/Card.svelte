@@ -4,7 +4,7 @@
 	export let isPriorityChoice = false;
 </script>
 
-<p class="card" data-show="{isCurrent}" data-dragging="false" data-status="{isCurrent === true ? 'current' : 'waiting'}" data-is-explanation="{isExplanation}" data-is-priority="{isPriorityChoice}">
+<p class="card" data-show="{isCurrent}" data-dragging="false" data-drag-completed="none" data-status="{isCurrent === true ? 'current' : 'waiting'}" data-is-explanation="{isExplanation}" data-is-priority="{isPriorityChoice}">
 	<slot></slot>
 </p>
 

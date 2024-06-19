@@ -31,7 +31,7 @@
     const unsubIsExplanation = isCurrentExplanation.subscribe((v) => isCurrentExplanationVal = v);
     const unsubIsPriorityVal = isCurrentPriority.subscribe((v) => isCurrentPriorityVal = v);
 
-	const interactThreshold = 100;
+	const interactThreshold = 90;
 	const interactMaxRotation = 15;
 
 	const red = "#E40E32";
@@ -134,6 +134,16 @@
 		target.style.setProperty('--card-r', rotation + 'deg');
 
 		let mags = setSlideMag(x);
+
+		if (mags.magLeft == 1) {
+			target.setAttribute('data-drag-state', 'left');
+		}
+		else if (mags.magRight == 1) {
+			target.setAttribute('data-drag-state', 'right');
+		}
+		else {
+			target.setAttribute('data-drag-state', 'none');
+		}
 		setBorderColor(x, mags.magRight, mags.magLeft);
 	}
 	onMount(() => {
@@ -217,6 +227,10 @@
 					}
 					document.documentElement.style.setProperty('--right-color', rightColor);
 					document.documentElement.style.setProperty('--left-color', leftColor);
+					document.documentElement.style.setProperty('--right-color-light', blendColors(rightColor, "#ffffff", 0.8));
+					document.documentElement.style.setProperty('--left-color-light', blendColors(leftColor, "#ffffff", 0.8));
+					document.documentElement.style.setProperty('--right-color-dark', blendColors(rightColor, "#000000", 0.8));
+					document.documentElement.style.setProperty('--left-color-dark', blendColors(leftColor, "#000000", 0.8));
 
 					let mags = setSlideMag(0);
 					setBorderColor(x, mags.magRight, mags.magLeft);
@@ -282,6 +296,10 @@
 						}	
 						document.documentElement.style.setProperty('--right-color', rightColor);
 						document.documentElement.style.setProperty('--left-color', leftColor);
+						document.documentElement.style.setProperty('--right-color-light', blendColors(rightColor, "#ffffff", 0.8));
+						document.documentElement.style.setProperty('--left-color-light', blendColors(leftColor, "#ffffff", 0.8));
+						document.documentElement.style.setProperty('--right-color-dark', blendColors(rightColor, "#000000", 0.8));
+						document.documentElement.style.setProperty('--left-color-dark', blendColors(leftColor, "#000000", 0.8));
 					});
 					isCurrentExplanation.set(child.getAttribute('data-is-explanation') == 'true');
 				}
@@ -464,16 +482,16 @@
 		left: 0;
 		transform: scale(var(--scale));
 		padding: 2.3rem;
-		transition: box-shadow 0.2s, transform 0.25s ease-out, top 0.25s ease-out 0.3s, opacity 0.3s ease-out;
+		transition: box-shadow 0.2s, transform 0.25s ease-out, top 0.25s ease-out 0.3s, opacity 0.3s ease-out, background-color 0.12s ease-out, color 0.12s ease-out;
 		box-shadow: -64px 173px 52px 0px rgba(0, 0, 0, 0.00), -41px 111px 47px 0px rgba(0, 0, 0, 0.00), -23px 62px 40px 0px rgba(0, 0, 0, 0.00), -10px 28px 29px 0px rgba(0, 0, 0, 0.00), -3px 7px 16px 0px rgba(0, 0, 0, 0.00);
 	}
 	:global(.card[data-dragging="true"]) {
 		transform: translateX(var(--card-x)) translateY(var(--card-y)) rotate(var(--card-r)) scale(var(--scale));
-		transition: none;
+		transition: background-color 0.12s ease-out, color 0.12s ease-out;
 	}
 
 	:global(.card[data-dragging="false"]) {
-		transition: box-shadow 0.2s, transform 0.25s ease-out, top 0.25s ease-out 0.3s, opacity 0.3s ease-out;
+		transition: box-shadow 0.2s, transform 0.25s ease-out, top 0.25s ease-out 0.3s, opacity 0.3s ease-out, background-color 0.12s ease-out, color 0.12s ease-out;
 		transform: translateX(var(--card-x)) translateY(var(--card-y)) rotate(var(--card-r)) scale(var(--scale));
 	}
 
@@ -491,6 +509,16 @@
 	:global(.card[data-is-explanation="true"]) {
 		background-color: var(--black);
 		border-color: var(--black);
+	}
+
+	:global(.card[data-drag-state="right"]:not([data-is-explanation="true"])) {
+		background-color: var(--right-color-light);
+		color: var(--right-color-dark);
+	}
+
+	:global(.card[data-drag-state="left"]:not([data-is-explanation="true"])) {
+		background-color: var(--left-color-light);
+		color: var(--left-color-dark);
 	}
 
 	:global(.card > *) {

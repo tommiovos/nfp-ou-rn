@@ -40,7 +40,38 @@
 
             loadData();
         }
-    })
+    });
+
+    function swipeManual(side="right") {
+        const slides = document.getElementById("slides");
+        if (slides == null || slides.children.length == 0) {
+            return;
+        }
+        const firstCard = slides.children[0];
+
+        const multiplier = side.toLowerCase() === 'left' ? -1 : 1;
+
+        firstCard.animate(
+                [
+                    {
+                        transform: 'translateX(0) translateY(0) rotate(0deg)',
+                        opacity: 1,
+                    },
+                    {
+                        transform: 'translateX(' + 80 * multiplier + '%) translateY(15%) rotate(' + 20 * multiplier +'deg)',
+                        opacity: 0.9,
+                    },
+                    {
+                        transform: 'translateX(' + 130 * multiplier + '%) translateY(60%) rotate(' + 38 * multiplier +'deg)',
+                        opacity: 0,
+                    }
+                ],
+                {
+                    duration: 400,
+                    easing: 'ease-out'
+                }
+            )
+    }
 
     const unsubCard = currentCard.subscribe((v) => currentCardVal = v);
     const unsubIsExplanation = isCurrentExplanation.subscribe((v) => isCurrentExplanationVal = v);
@@ -84,15 +115,15 @@
         </div>
 
         {#if !isCurrentExplanationVal && !isCurrentPriorityVal}
-            <p class="rn rn-colored colored opt {slideMagVal <= -1 ? 'slide-done' : ''} {slideMagVal < 0 ? 'dragged' : ''}" transition:blur={{ delay: 0, duration: 170 }}>RN</p>
-            <p class="rn opt" transition:blur={{ amount: 10, duration: 170 }}>RN</p>
-            <p class="nfp nfp-colored colored opt {slideMagVal >= 1 ? 'slide-done' : ''} {slideMagVal > 0 ? 'dragged' : ''}" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>NFP</p>
-            <p class="nfp opt" transition:blur={{ delay: 0, duration: 170 }}>NFP</p>
+            <button on:click={() => swipeManual('left')} class="rn rn-colored colored opt {slideMagVal <= -1 ? 'slide-done' : ''} {slideMagVal < 0 ? 'dragged' : ''}" transition:blur={{ delay: 0, duration: 170 }}>RN</button>
+            <button class="rn opt" transition:blur={{ amount: 10, duration: 170 }}>RN</button>
+            <button on:click={() => swipeManual('right')} class="nfp nfp-colored colored opt {slideMagVal >= 1 ? 'slide-done' : ''} {slideMagVal > 0 ? 'dragged' : ''}" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>NFP</button>
+            <button class="nfp opt" transition:blur={{ delay: 0, duration: 170 }}>NFP</button>
         {:else if isCurrentPriorityVal}
-            <p class="rn rn-colored colored opt {slideMagVal <= -1 ? 'slide-done' : ''} {slideMagVal < 0 ? 'dragged' : ''}" transition:blur={{ delay: 0, duration: 170 }}>Pas prioritaire</p>
-            <p class="rn opt" transition:blur={{ amount: 10, duration: 170 }}>Pas prioritaire</p>
-            <p class="nfp nfp-colored colored opt {slideMagVal >= 1 ? 'slide-done' : ''} {slideMagVal > 0 ? 'dragged' : ''}" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>Prioritaire</p>
-            <p class="nfp opt" transition:blur={{ delay: 0, duration: 170 }}>Prioritaire</p>
+            <button on:click={() => swipeManual('left')} class="rn rn-colored colored opt {slideMagVal <= -1 ? 'slide-done' : ''} {slideMagVal < 0 ? 'dragged' : ''}" transition:blur={{ delay: 0, duration: 170 }}>Pas prioritaire</button>
+            <button class="rn opt" transition:blur={{ amount: 10, duration: 170 }}>Pas prioritaire</button>
+            <button on:click={() => swipeManual('right')} class="nfp nfp-colored colored opt {slideMagVal >= 1 ? 'slide-done' : ''} {slideMagVal > 0 ? 'dragged' : ''}" transition:blur={{ delay: 0,amount: 10, duration: 170 }}>Prioritaire</button>
+            <button class="nfp opt" transition:blur={{ delay: 0, duration: 170 }}>Prioritaire</button>
         {:else}
             <p class="next" transition:blur={{ delay: 0, duration: 170 }}>Glisser pour passer à la suite</p>
         {/if}
@@ -142,7 +173,7 @@
     
     @media screen and (max-width: 420px) {
         .main {
-            grid-template-rows: 3rem auto 3rem;
+            grid-template-rows: 3rem auto 3.75rem;
         }
     }
 
@@ -173,6 +204,19 @@
         padding-bottom: 1rem;
     }
 
+    .opt {
+        /* border: 1px solid var(--grey); */
+        border: none;
+        background-color: rgb(227, 227, 227);
+        border-radius: 1rem;
+        font-size: 1.25rem;
+        opacity: 1;
+        transition: opacity 0.1s ease-out;
+        display: flex;
+        align-items: center;
+        color: rgb(90, 90, 90);
+    }
+
     @media screen and (max-width: 560px) {
         .swipe-slides {
             aspect-ratio: 1/1.5;
@@ -185,20 +229,10 @@
         .title {
             font-size: 1.75rem;
         }
-    }
 
-    .opt {
-        border: 1px solid var(--grey);
-        border-radius: 1rem;
-        font-size: 1.25rem;
-        opacity: 1;
-        transition: opacity 0.1s ease-out;
-        display: flex;
-        align-items: center;
-    }
-
-    .opt.dragged {
-        border: 1px solid var(--blended-color);
+        .opt {
+            font-size: 1rem;
+        }
     }
 
     .rn {
@@ -209,11 +243,6 @@
         grid-area: rn;
         place-self: center;
         justify-content: flex-start;
-    }
-
-    .rn:not(.colored) {
-        opacity: calc(0.5 - var(--slide-mag-left)/2);
-        font-weight: calc(500 + var(--slide-mag-left)*120);
     }
 
 
@@ -227,34 +256,12 @@
         justify-content: flex-end;
     }
 
-    .nfp:not(.colored) {
-        opacity: calc(0.5 - var(--slide-mag-right)/2);
-        font-weight: calc(500 + var(--slide-mag-right)*120);
-    }
-
     .colored {
         opacity: 0;
     }
 
-    .rn.colored {
-        color: var(--left-color);
-        opacity: var(--slide-mag-left);
-        font-weight: calc(500 + var(--slide-mag-left)*120);
-    }
-
     .rn.slide-done {
         background-color: var(--left-color);
-        color: white;
-    }
-
-    .nfp.colored {
-        color: var(--right-color);
-        opacity: var(--slide-mag-right);
-        font-weight: calc(500 + var(--slide-mag-right)*120);
-    }
-
-    .nfp.slide-done {
-        background-color: var(--right-color);
         color: white;
     }
 
@@ -273,5 +280,25 @@
 
     .stop-transition {
         transition: none !important;
+    }
+
+
+    @media screen and (max-height: 780px) {
+        .swipe-slides {
+            aspect-ratio: 1/1.3;
+        }
+
+        :global(.card .title) {
+            font-size: 1.5rem;
+        }
+
+        :global(.card p){
+            font-size: 1rem;
+        }
+
+        :global(.subject) {
+            font-size: 1rem !important;
+            place-self: end center !important;
+        }
     }
 </style>
